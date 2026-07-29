@@ -1,0 +1,8 @@
+# mantiene el contexto de build limpio: la imagen instala sus
+# propias deps con `bun install --frozen-lockfile`.
+node_modules
+dist
+.git
+.github
+coverage
+*.log

@@ -1,0 +1,38 @@
+# push a main → imagen a GHCR → rollout en tu K3s por SSH.
+# Secrets requeridos: VPS_HOST, VPS_USER, VPS_DEPLOY_KEY.
+name: deploy
+on: { push: { branches: [main] } }
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    permissions: { contents: read, packages: write }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      - name: Rollout en K3s
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_DEPLOY_KEY }}
+          script: |
+            kubectl -n personal set image deployment/portfolio \
+              web=ghcr.io/${{ github.repository }}:${{ github.sha }}
+            kubectl -n personal rollout status deployment/portfolio --timeout=90s

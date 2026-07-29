@@ -1,1 +1,390 @@
 @import "tailwindcss";
+
+/* ══════════ TOKENS ══════════
+   Definidos en @theme para que Tailwind genere las utilidades
+   (text-cyan, bg-panel, border-line…) usables en el JSX.
+   Dentro de este archivo NO se pasan por @apply: se usan como
+   variables CSS nativas — var(--color-x) — que funcionan siempre. */
+@theme {
+  --color-bg: #080a12;
+  --color-panel: #0a0e1c;
+  --color-fg: #c8d6e5;
+  --color-fg2: #a9b6cc;
+  --color-dim: #5b6a86;
+  --color-line: #17223c;
+  --color-line2: #24365a;
+  --color-cyan: #22e5ff;
+  --color-mag: #ff2ea6;
+  --color-grn: #4dff9e;
+  --color-amb: #ffcc55;
+  --color-red: #ff4d6d;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* ══════════ BASE ══════════ */
+html {
+  background: #000;
+}
+
+body {
+  @apply min-h-screen overflow-x-hidden text-[14px] leading-[1.65];
+  font-family: var(--font-mono);
+  color: var(--color-fg);
+  background-color: var(--color-bg);
+  background-image: radial-gradient(
+    120% 90% at 50% 0%,
+    #12173010 0%,
+    transparent 60%
+  );
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-cyan);
+  color: #000;
+}
+
+a {
+  @apply no-underline;
+  color: var(--color-cyan);
+}
+a:hover {
+  color: var(--color-mag);
+  text-shadow: 0 0 8px currentColor;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-amb);
+  outline-offset: 2px;
+}
+
+/* ══════════ ANIMACIONES (nivel raíz, fuera de capas) ══════════ */
+@keyframes flick {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.97;
+  }
+}
+@keyframes hoverY {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes introIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes bootIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes bootOut {
+  0% {
+    opacity: 1;
+    max-height: 20em;
+  }
+  35% {
+    opacity: 0.9;
+    filter: brightness(1.5);
+  }
+  100% {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ══════════ COMPONENTES ══════════ */
+@layer components {
+  /* ── CRT overlay ── */
+  .crt {
+    @apply fixed inset-0 z-50 pointer-events-none;
+  }
+  .crt::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    mix-blend-mode: multiply;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0) 0px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0.28) 3px,
+      rgba(0, 0, 0, 0) 4px
+    );
+  }
+  .crt::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      130% 130% at 50% 50%,
+      transparent 55%,
+      #000a 100%
+    );
+  }
+  .crt-flicker {
+    animation: flick 0.14s infinite;
+  }
+
+  /* ── texto con fósforo ── */
+  .phosphor {
+    text-shadow: 0 0 2px currentColor;
+  }
+
+  /* ── prompt ── */
+  .ps-u {
+    @apply font-bold;
+    color: var(--color-grn);
+  }
+  .ps-h {
+    @apply font-bold;
+    color: var(--color-cyan);
+  }
+  .ps-d {
+    color: var(--color-mag);
+  }
+
+  /* ── bloques de salida ── */
+  .out {
+    @apply pl-3.5 my-1 ml-0.5;
+    border-left: 2px solid #1e2a44;
+  }
+  .kv {
+    @apply grid gap-x-3.5 gap-y-0.5;
+    grid-template-columns: 130px 1fr;
+  }
+  .kv .k {
+    color: var(--color-dim);
+  }
+  .note {
+    @apply pl-3 my-1.5 opacity-90 whitespace-pre-wrap;
+    color: var(--color-amb);
+    border-left: 2px solid var(--color-amb);
+  }
+
+  /* ── encabezado de sección con icono ── */
+  .sect {
+    @apply flex items-center gap-2.5 mt-3.5 mb-1;
+    color: var(--color-cyan);
+  }
+  .sect svg {
+    @apply w-5 h-5 flex-none;
+    filter: drop-shadow(0 0 5px #22e5ff88);
+  }
+  .sect .txt {
+    @apply font-bold uppercase text-[12.5px] tracking-[.08em];
+  }
+  .sect::after {
+    content: "";
+    @apply flex-1 h-px;
+    background: linear-gradient(90deg, #22e5ff55, transparent);
+  }
+  .sect-mag {
+    color: var(--color-mag);
+  }
+  .sect-mag svg {
+    filter: drop-shadow(0 0 5px #ff2ea688);
+  }
+  .sect-mag::after {
+    background: linear-gradient(90deg, #ff2ea655, transparent);
+  }
+  .sect-grn {
+    color: var(--color-grn);
+  }
+  .sect-grn svg {
+    filter: drop-shadow(0 0 5px #4dff9e88);
+  }
+  .sect-grn::after {
+    background: linear-gradient(90deg, #4dff9e55, transparent);
+  }
+  .sect-amb {
+    color: var(--color-amb);
+  }
+  .sect-amb svg {
+    filter: drop-shadow(0 0 5px #ffcc5588);
+  }
+  .sect-amb::after {
+    background: linear-gradient(90deg, #ffcc5555, transparent);
+  }
+
+  /* ── tarjetas de registro ── */
+  .rec {
+    @apply p-3.5 my-2 flex gap-3.5 items-start;
+    border: 1px solid var(--color-line);
+    background: #0a0e1c8c; /* panel al ~55% */
+  }
+  .rec:hover {
+    border-color: var(--color-cyan);
+    box-shadow:
+      0 0 0 1px #22e5ff33,
+      0 0 22px #22e5ff14;
+  }
+  .rec-game:hover {
+    border-color: var(--color-grn);
+    box-shadow:
+      0 0 0 1px #4dff9e33,
+      0 0 22px #4dff9e14;
+  }
+  .ric {
+    @apply flex-none w-[38px] h-[38px] rounded-[3px] flex items-center justify-center;
+    border: 1px solid var(--color-line2);
+    background: #0c1226;
+    color: var(--color-cyan);
+  }
+  .ric svg {
+    @apply w-[22px] h-[22px];
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+  .rec-game .ric {
+    border-color: #1f5a3e;
+    color: var(--color-grn);
+  }
+  .tag {
+    @apply text-[11px] px-[7px] py-px rounded-[2px];
+    border: 1px solid var(--color-line2);
+    color: var(--color-cyan);
+  }
+  .rec-game .tag {
+    border-color: #1f5a3e;
+    color: var(--color-grn);
+  }
+
+  /* ── sprites pixel-art ── */
+  .sprite {
+    @apply flex-none w-14 h-14 rounded-[3px] flex items-center justify-center;
+    border: 1px solid #1f5a3e;
+    background: #071310;
+  }
+  .sprite svg {
+    @apply w-11 h-11;
+    filter: drop-shadow(0 0 6px #4dff9e55);
+    animation: hoverY 2.2s ease-in-out infinite;
+  }
+
+  /* ── avatar pixel-art ── */
+  .avatar-px {
+    @apply flex-none w-[150px] rounded-[3px] overflow-hidden;
+    border: 1px solid var(--color-line2);
+    background: var(--color-panel);
+    box-shadow:
+      0 0 0 1px #22e5ff22,
+      0 0 26px #22e5ff18,
+      0 0 40px #ff2ea60e;
+  }
+  .avatar-px svg {
+    @apply block w-full h-auto;
+  }
+
+  /* ── banner e intro ── */
+  .banner {
+    @apply inline-block text-left whitespace-pre overflow-hidden;
+    color: var(--color-cyan);
+    font-size: clamp(3.5px, 0.82vw, 10px);
+    line-height: 1.1;
+    text-shadow:
+      0 0 6px #22e5ff88,
+      0 0 14px #22e5ff44;
+  }
+  .tagline {
+    @apply mt-1.5;
+    color: var(--color-mag);
+    text-shadow: 0 0 8px #ff2ea666;
+  }
+  .intro {
+    @apply text-center my-1.5;
+    animation: introIn 0.55s ease-out both;
+  }
+
+  /* ── boot ── */
+  .bootlog {
+    @apply overflow-hidden;
+    max-height: 20em;
+  }
+  .bootline {
+    animation: bootIn 0.3s ease-out both;
+  }
+  .bootlog-out {
+    animation: bootOut 0.7s ease-in forwards;
+  }
+
+  /* ── cursor de bloque ── */
+  .cur {
+    @apply inline-block w-[9px] h-[1.05em] translate-y-0.5;
+    background: var(--color-cyan);
+    box-shadow: 0 0 8px var(--color-cyan);
+    animation: blink 1s steps(1) infinite;
+  }
+
+  /* ── chips y barras ── */
+  .chip {
+    @apply px-2 py-px rounded-[2px] cursor-pointer transition-all duration-150 text-[11.5px];
+    border: 1px solid var(--color-line2);
+    color: var(--color-cyan);
+    background: transparent;
+    font-family: var(--font-mono);
+  }
+  .chip:hover {
+    background: var(--color-cyan);
+    color: #000;
+    box-shadow: 0 0 12px #22e5ff66;
+  }
+
+  /* ── arcade ── */
+  .game-host {
+    @apply p-2.5 my-2 max-w-[520px];
+    border: 1px solid var(--color-line2);
+    background: #070a14;
+    box-shadow:
+      0 0 0 1px #22e5ff1a,
+      0 0 24px #22e5ff10;
+  }
+  .game-host canvas {
+    @apply block w-full;
+    border: 1px solid var(--color-line);
+    background: #05070f;
+    image-rendering: pixelated;
+    touch-action: none;
+  }
+  .game-hud {
+    @apply flex justify-between text-[11.5px] mb-2 uppercase tracking-[.06em];
+    color: var(--color-dim);
+  }
+  .game-hud b {
+    color: var(--color-amb);
+  }
+}
+
+/* ══════════ ACCESIBILIDAD ══════════ */
+@media (prefers-reduced-motion: reduce) {
+  .crt-flicker,
+  .cur,
+  .sprite svg,
+  .intro,
+  .bootline,
+  .bootlog-out {
+    animation: none !important;
+  }
+}

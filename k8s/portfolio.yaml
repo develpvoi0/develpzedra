@@ -1,0 +1,47 @@
+# Despliegue en tu K3s. Ajusta: imagen (TU_USUARIO) y host (TU_DOMINIO).
+# Requiere una vez: kubectl create ns personal · DNS al VPS.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portfolio
+  namespace: personal
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: portfolio } }
+  template:
+    metadata: { labels: { app: portfolio } }
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/TU_USUARIO/parra-terminal:latest
+          ports: [{ containerPort: 80 }]
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { cpu: 100m, memory: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: portfolio, namespace: personal }
+spec:
+  selector: { app: portfolio }
+  ports: [{ port: 80, targetPort: 80 }]
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: portfolio
+  namespace: personal
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: TU_DOMINIO
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: portfolio, port: { number: 80 } } }
+  tls:
+    - hosts: [TU_DOMINIO]
+      secretName: portfolio-tls
