@@ -79,10 +79,11 @@ export function startSnake(cv: HTMLCanvasElement, hooks: GameHooks): () => void 
     if (!over) {
       over = true;
       clearInterval(iv);          // ← detén el tick: sin esto la serpiente
-      audio.stopMusic();          //   "zombi" seguía moviéndose y re-mordiéndose,
-      if (dead) drawGameOver();   //   disparando errBuzz en bucle (sonido glitch)
-      hooks.onEnd(msg);
-    }
+      detachInput();              //   "zombi" seguía moviéndose y re-mordiéndose,
+      audio.stopMusic();          //   disparando errBuzz en bucle (sonido glitch).
+      if (dead) drawGameOver();   // detachInput: sin esto el listener global de
+      hooks.onEnd(msg);           //   teclas seguía tragándose w/a/s/d/flechas al
+    }                             //   escribir en la terminal tras morir.
   };
 
   /* tick del juego cada 110ms */
@@ -133,6 +134,16 @@ export function startSnake(cv: HTMLCanvasElement, hooks: GameHooks): () => void 
     else setDir(dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 });
   };
 
+  /* Quita los listeners de input. Se llama al morir/salir (end) y
+     también en el cleanup: como el GameCanvas NO se desmonta al
+     morir, sin esto el listener global de teclas seguía activo y
+     robaba w/a/s/d/flechas a la terminal. */
+  const detachInput = () => {
+    document.removeEventListener("keydown", onKey, true);
+    cv.removeEventListener("touchstart", onTS);
+    cv.removeEventListener("touchend", onTE);
+  };
+
   document.addEventListener("keydown", onKey, true);
   cv.addEventListener("touchstart", onTS, { passive: true });
   cv.addEventListener("touchend", onTE, { passive: true });
@@ -144,8 +155,6 @@ export function startSnake(cv: HTMLCanvasElement, hooks: GameHooks): () => void 
     over = true;
     audio.stopMusic();
     clearInterval(iv);
-    document.removeEventListener("keydown", onKey, true);
-    cv.removeEventListener("touchstart", onTS);
-    cv.removeEventListener("touchend", onTE);
+    detachInput();
   };
 }

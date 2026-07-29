@@ -66,7 +66,8 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
   const end = (msg: string, dead = false) => {
     if (!over) {
       over = true;
-      audio.stopMusic();
+      detachInput();              // sin esto el listener global de teclas seguía
+      audio.stopMusic();          // activo tras morir y robaba espacio/w a la terminal
       if (dead) drawGameOver();   // solo al perder, no al salir con ESC
       hooks.onEnd(msg);
     }
@@ -176,6 +177,14 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
   };
   const onTap = (e: PointerEvent) => { e.preventDefault(); flap(); };
 
+  /* Quita los listeners de input. Se llama al morir/salir (end) y en
+     el cleanup: como el GameCanvas NO se desmonta al morir, sin esto
+     el listener global de teclas seguía robando espacio/w a la terminal. */
+  const detachInput = () => {
+    document.removeEventListener("keydown", onKey, true);
+    cv.removeEventListener("pointerdown", onTap);
+  };
+
   document.addEventListener("keydown", onKey, true);
   cv.addEventListener("pointerdown", onTap);
   audio.startMusic(batMusic);         // banda sonora en bucle
@@ -185,7 +194,6 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
     over = true;
     audio.stopMusic();
     cancelAnimationFrame(raf);
-    document.removeEventListener("keydown", onKey, true);
-    cv.removeEventListener("pointerdown", onTap);
+    detachInput();
   };
 }
