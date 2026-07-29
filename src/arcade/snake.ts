@@ -9,6 +9,7 @@
    onEnd); no sabe que React existe.
    ═══════════════════════════════════════════════════════════════ */
 import { audio } from "../engine/audio";
+import snakeMusic from "../assets/gameMusic/snake.mp3";
 
 export type GameHooks = {
   onScore(n: number): void;
@@ -59,7 +60,7 @@ export function startSnake(cv: HTMLCanvasElement, hooks: GameHooks): () => void 
   };
 
   const end = (msg: string) => {
-    if (!over) { over = true; hooks.onEnd(msg); }
+    if (!over) { over = true; audio.stopMusic(); hooks.onEnd(msg); }
   };
 
   /* tick del juego cada 110ms */
@@ -77,7 +78,7 @@ export function startSnake(cv: HTMLCanvasElement, hooks: GameHooks): () => void 
     snake.unshift(h);
     if (h.x === food.x && h.y === food.y) {
       hooks.onScore(++score);
-      audio.beep(700 + score * 18, 0.05, 0.045);  // tono sube con el score
+      audio.scorePing(620 + score * 12);  // tono sube con el score + ducking
       food = place();
     } else {
       snake.pop();
@@ -113,10 +114,12 @@ export function startSnake(cv: HTMLCanvasElement, hooks: GameHooks): () => void 
   cv.addEventListener("touchstart", onTS, { passive: true });
   cv.addEventListener("touchend", onTE, { passive: true });
   draw();
+  audio.startMusic(snakeMusic);   // banda sonora en bucle
 
   /* TODO se desregistra aquí — la mitad del contrato */
   return () => {
     over = true;
+    audio.stopMusic();
     clearInterval(iv);
     document.removeEventListener("keydown", onKey, true);
     cv.removeEventListener("touchstart", onTS);

@@ -18,6 +18,7 @@
    ═══════════════════════════════════════════════════════════════ */
 import { audio } from "../engine/audio";
 import { BATMAP, BATPAL, drawMap } from "../engine/sprites";
+import batMusic from "../assets/gameMusic/bat.mp3";
 import type { GameHooks } from "./snake";
 
 type Wall = { x: number; gy: number; gh: number; passed: boolean };
@@ -43,7 +44,7 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
   let last = 0;                   // timestamp del cuadro anterior
 
   const end = (msg: string) => {
-    if (!over) { over = true; hooks.onEnd(msg); }
+    if (!over) { over = true; audio.stopMusic(); hooks.onEnd(msg); }
   };
 
   const flap = () => {
@@ -120,7 +121,7 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
         if (!w.passed && w.x + 16 < BX) {
           w.passed = true;
           hooks.onScore(++score);
-          audio.beep(760 + score * 14, 0.05, 0.04);
+          audio.scorePing(680 + score * 12);   // punto + ducking de la música
         }
       }
     }
@@ -144,10 +145,12 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
 
   document.addEventListener("keydown", onKey, true);
   cv.addEventListener("pointerdown", onTap);
+  audio.startMusic(batMusic);         // banda sonora en bucle
   raf = requestAnimationFrame(loop);  // primer cuadro con timestamp real
 
   return () => {
     over = true;
+    audio.stopMusic();
     cancelAnimationFrame(raf);
     document.removeEventListener("keydown", onKey, true);
     cv.removeEventListener("pointerdown", onTap);
