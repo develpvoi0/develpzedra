@@ -16,6 +16,26 @@ const GAME_META: Record<GameKind, { title: string; tip: string }> = {
   bat:   { title: "VESPER//mini", tip: "espacio o toque para aletear · ESC salir" },
 };
 
+/* Banner de bienvenida. Se usa en dos sitios: al montar (primera
+   entrada) y en `clear` (que reinicia el log dejando SOLO esto).
+   Es un elemento estático: cada vez que entra al log con una key
+   nueva, React lo remonta y su animación `introIn` se reproduce. */
+const WELCOME = (
+  <div className="intro">
+    <pre className="banner">{BANNER}</pre>
+    <div className="tagline">
+      {"// Del componente al clúster — Construyo y lo mantengo corriendo."}
+    </div>
+    <div className="mt-2">
+      Sesión Iniciada como <b className="text-grn">Jhorman Parra</b> · Caracas, VE ·{" "}
+      <span className="text-amb">5+ años</span>
+    </div>
+    <div className="text-dim">
+      Escribe <b className="text-cyan">help</b> para ver comandos, o toca un chip abajo ↓
+    </div>
+  </div>
+);
+
 export function Terminal() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [skip, setSkip] = useState(0);
@@ -32,7 +52,13 @@ export function Terminal() {
     setEntries(prev => [...prev, { id: ++idRef.current, node }]);
   }, []);
 
-  const clear = useCallback(() => setEntries([]), []);
+  /* clear NO deja el log vacío: lo reinicia mostrando de nuevo el
+     banner de bienvenida (como una sesión recién abierta). El eco
+     del propio comando `clear` también se borra, porque este
+     setEntries reemplaza TODO por una sola entrada. */
+  const clear = useCallback(() => {
+    setEntries([{ id: ++idRef.current, node: WELCOME }]);
+  }, []);
 
   /* Monta el juego como una entrada más del log. El GameCanvas
      nos entrega su función de parada vía registerStop (el
@@ -111,21 +137,7 @@ export function Terminal() {
   /* Banner de bienvenida como primera entrada + fanfarria.
      Deps vacías: solo al montar. */
   useEffect(() => {
-    print(
-      <div className="intro">
-        <pre className="banner">{BANNER}</pre>
-        <div className="tagline">
-          {"// Del componente al clúster — Construyo y lo mantengo corriendo."}
-        </div>
-        <div className="mt-2">
-          Sesión Iniciada como <b className="text-grn">Jhorman Parra</b> · Caracas, VE ·{" "}
-          <span className="text-amb">5+ años</span>
-        </div>
-        <div className="text-dim">
-          Escribe <b className="text-cyan">help</b> para ver comandos, o toca un chip abajo ↓
-        </div>
-      </div>,
-    );
+    print(WELCOME);
     audio.beep(660, 0.07, 0.045);
     const t = setTimeout(() => audio.beep(990, 0.09, 0.045), 110);
     return () => clearTimeout(t);
