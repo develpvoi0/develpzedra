@@ -17,7 +17,7 @@
       vez: nada de perder en el medio segundo inicial.
    ═══════════════════════════════════════════════════════════════ */
 import { audio } from "../engine/audio";
-import { BATMAP, BATPAL, drawMap } from "../engine/sprites";
+import { BAT_FLAP, BATPAL, drawMap } from "../engine/sprites";
 import batMusic from "../assets/gameMusic/bat.mp3";
 import type { GameHooks } from "./snake";
 
@@ -29,6 +29,7 @@ const FLAP = -2.4;     // impulso de aleteo
 const WALLSPD = 1.2;   // velocidad de las paredes
 const SPAWN = 115;     // frames entre paredes
 const GAP = 66;        // hueco vertical
+const WINGSTEP = 5;    // frames de 60fps por pose de aleteo
 
 export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
   const c2 = cv.getContext("2d")!;
@@ -42,9 +43,33 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
   let walls: Wall[] = [];
   let spawnAcc = SPAWN - 90;      // gracia: 1ª pared a ~1.5s de empezar
   let last = 0;                   // timestamp del cuadro anterior
+  let wing = 0;                   // fase del aleteo (avanza con el tiempo)
 
-  const end = (msg: string) => {
-    if (!over) { over = true; audio.stopMusic(); hooks.onEnd(msg); }
+  /* Pantalla de fin DENTRO del canvas: atenúa la escena y muestra
+     GAME OVER + el puntaje. Se dibuja una vez al morir; como el
+     loop se detiene, el cuadro permanece congelado con esto encima. */
+  const drawGameOver = () => {
+    c2.fillStyle = "rgba(5,7,15,0.74)";
+    c2.fillRect(0, 0, 240, 160);
+    c2.textAlign = "center";
+    c2.fillStyle = "#ff4d6d";
+    c2.font = "bold 24px monospace";
+    c2.fillText("GAME OVER", 120, 66);
+    c2.fillStyle = "#ffcc55";
+    c2.font = "13px monospace";
+    c2.fillText("score  " + score, 120, 92);
+    c2.fillStyle = "#5b6a86";
+    c2.font = "10px monospace";
+  
+  };
+
+  const end = (msg: string, dead = false) => {
+    if (!over) {
+      over = true;
+      audio.stopMusic();
+      if (dead) drawGameOver();   // solo al perder, no al salir con ESC
+      hooks.onEnd(msg);
+    }
   };
 
   const flap = () => {
@@ -69,10 +94,17 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
       c2.fillRect(w.x, w.gy - 1.5, 16, 1.5);
       c2.fillRect(w.x, w.gy + w.gh, 16, 1.5);
     });
-    // mientras espera el primer toque, flota con un bob suave y
-    // muestra la pista (usa `now` porque `t` aún no avanza)
+    // sprite con ALETEO (frame según `wing`) e INCLINACIÓN según la
+    // velocidad vertical: sube la nariz al aletear, la baja al caer
+    // — el detalle que hace que se "sienta" vuelo. Idle: bob suave.
+    const frame = BAT_FLAP[Math.floor(wing / WINGSTEP) % BAT_FLAP.length];
     const bob = started ? 0 : Math.sin(now / 300) * 4;
-    drawMap(c2, BATMAP, BATPAL, BX, by + bob, S);
+    const angle = started ? Math.max(-0.35, Math.min(0.55, vy * 0.06)) : 0;
+    c2.save();
+    c2.translate(BX + BW / 2, by + bob + BH / 2);
+    c2.rotate(angle);
+    drawMap(c2, frame, BATPAL, -BW / 2, -BH / 2, S);
+    c2.restore();
     if (!started) {
       c2.fillStyle = "#22e5ff";
       c2.font = "10px monospace";
@@ -90,6 +122,7 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
     let dt = (now - last) / (1000 / 60);
     last = now;
     if (dt > 3) dt = 3;
+    wing += dt;   // el aleteo avanza siempre (también flotando en idle)
 
     if (started) {
       t += dt;
@@ -108,7 +141,7 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
       // techo/suelo
       if (by < -2 || by + BH > 162) {
         audio.errBuzz();
-        return end("Contra la cueva");
+        return end("Contra la cueva", true);
       }
       // colisión con paredes + punto al pasarlas (con margen de 2px
       // a favor del jugador: los juegos justos se sienten mejor)
@@ -116,12 +149,12 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
         if (BX + BW - 2 > w.x && BX + 2 < w.x + 16 &&
             (by + 2 < w.gy || by + BH - 2 > w.gy + w.gh)) {
           audio.errBuzz();
-          return end("Contra la cueva");
+          return end("Contra la cueva", true);
         }
         if (!w.passed && w.x + 16 < BX) {
           w.passed = true;
           hooks.onScore(++score);
-          audio.scorePing(680 + score * 12);   // punto + ducking de la música
+          audio.scorePing(680 + score * 12);   // sonido de punto destacado
         }
       }
     }

@@ -59,12 +59,35 @@ export function startSnake(cv: HTMLCanvasElement, hooks: GameHooks): () => void 
     });
   };
 
-  const end = (msg: string) => {
-    if (!over) { over = true; audio.stopMusic(); hooks.onEnd(msg); }
+  /* Pantalla de fin DENTRO del canvas: atenúa el tablero y muestra
+     GAME OVER + el puntaje. Se dibuja una vez al morir; el tick se
+     detiene, así que el cuadro queda congelado con esto encima. */
+  const drawGameOver = () => {
+    c2.fillStyle = "rgba(5,7,15,0.74)";
+    c2.fillRect(0, 0, 240, 160);
+    c2.textAlign = "center";
+    c2.fillStyle = "#ff4d6d";
+    c2.font = "bold 24px monospace";
+    c2.fillText("GAME OVER", 120, 74);
+    c2.fillStyle = "#ffcc55";
+    c2.font = "13px monospace";
+    c2.fillText("score  " + score, 120, 100);
+    c2.textAlign = "left";
+  };
+
+  const end = (msg: string, dead = false) => {
+    if (!over) {
+      over = true;
+      clearInterval(iv);          // ← detén el tick: sin esto la serpiente
+      audio.stopMusic();          //   "zombi" seguía moviéndose y re-mordiéndose,
+      if (dead) drawGameOver();   //   disparando errBuzz en bucle (sonido glitch)
+      hooks.onEnd(msg);
+    }
   };
 
   /* tick del juego cada 110ms */
   const iv = setInterval(() => {
+    if (over) return;             // muerto: el tick no hace nada (doble seguro)
     dir = ndir;
     // bordes que envuelven (túnel): más amable para partidas casuales
     const h: P = {
@@ -73,12 +96,12 @@ export function startSnake(cv: HTMLCanvasElement, hooks: GameHooks): () => void 
     };
     if (snake.some(s => s.x === h.x && s.y === h.y)) {
       audio.errBuzz();
-      return end("te mordiste");
+      return end("te mordiste", true);
     }
     snake.unshift(h);
     if (h.x === food.x && h.y === food.y) {
       hooks.onScore(++score);
-      audio.scorePing(620 + score * 12);  // tono sube con el score + ducking
+      audio.scorePing(620 + score * 12);  // tono sube con el score
       food = place();
     } else {
       snake.pop();

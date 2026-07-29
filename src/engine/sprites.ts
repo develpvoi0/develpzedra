@@ -14,6 +14,36 @@ export const BATPAL: Record<string, string> = {
   a: "#1a2f4a", b: "#3b5a8a", c: "#22e5ff", d: "#ff2ea6", e: "#5b6a86",
 };
 
+/* Frames de ALETEO para el juego (la tarjeta de proyectos usa el
+   BATMAP fijo). Comparten cara y cuerpo; solo cambian las alas.
+   BATMAP es la pose media, así que la secuencia de vuelo es
+   arriba → medio → abajo → medio. */
+export const BATMAP_UP = `
+aba......aba
+abba....abba
+.abb....bba.
+..ab....ba..
+.abbbccbbba.
+..abccccba..
+...acdcda...
+...acccca...
+....a..a....
+....e..e....`;
+
+export const BATMAP_DOWN = `
+............
+..a......a..
+.abb....bba.
+abbba..abbba
+.abbbccbbba.
+..abccccba..
+...acdcda...
+...acccca...
+..aba..aba..
+.abae..eaba.`;
+
+export const BAT_FLAP = [BATMAP_UP, BATMAP, BATMAP_DOWN, BATMAP];
+
 export const SLIMEMAP = `
 ....abba....
 ..abbbbbba..
