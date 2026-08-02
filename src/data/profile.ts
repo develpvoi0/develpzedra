@@ -67,6 +67,12 @@ export const projects = [
     tags: ["Next.js", "NestJS", "PostgreSQL", "K3s"],
   }, */
   {
+    id: "bld_06", nombre: "Plataforma Educativa", icono: "grad", game: false,
+    meta: "Matemática Interactiva",
+    desc: "NextJS + editores de fórmulas y gráficas manipulables en el navegador.",
+    tags: ["NextJS", "NestJS", "MongoDB", "Redis", "RabbitMQ", "TailwindCSS", "MathLive", "JSXGraph", "Atomic Design"],
+  },
+  {
     id: "bld_02", nombre: "Energía Solidaria", icono: "heart", game: false,
     meta: "Respuesta a los sismos de jun/2026",
     desc: "Sitio de ayuda humanitaria con panel público de transparencia sobre lo recaudado y entregado.",
@@ -78,7 +84,7 @@ export const projects = [
     desc: "Sitio y calendario de cursos de una escuela de cocina. Diseño, front-end e infraestructura.",
     tags: ["Vite", "React", "TypeScript", "Tailwind", "Supabase", "Traefik", "Marca"],
   },
-  {
+   {
     id: "ent_04", nombre: "VESPER — el vuelo del silencio", icono: "chip", game: true, sprite: "bat",
     meta: "Pixel Art · Supervivencia · Steam",
     desc: "Eres un murciélago. Seis depredadores con comportamiento biológico real, cinco hábitats, ecolocalización como mecánica central.",
@@ -91,13 +97,7 @@ export const projects = [
     desc: "Nueve estadísticas, estados elementales combinables, cinco zonas y una zona final secreta.",
     tags: ["Sistemas", "Balance", "Pixel art"],
     nota: "// Diseñar un sistema de daño elemental y un esquema de base de datos usan el mismo músculo.",
-  },
-  {
-    id: "bld_06", nombre: "Plataforma Educativ", icono: "grad", game: false,
-    meta: "Matemática Interactiva",
-    desc: "NextJS + editores de fórmulas y gráficas manipulables en el navegador.",
-    tags: ["NextJS", "NestJS", "MongoDB", "Redis", "RabbitMQ", "TailwindCSS", "MathLive", "JSXGraph", "Atomic Design"],
-  },
+  }
 ] as const;
 
 export const stack = [

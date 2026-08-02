@@ -36,12 +36,12 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: TU_DOMINIO
+    - host: develpzedra.com
       http:
         paths:
           - path: /
             pathType: Prefix
             backend: { service: { name: portfolio, port: { number: 80 } } }
   tls:
-    - hosts: [TU_DOMINIO]
+    - hosts: [develpzedra.com]
       secretName: portfolio-tls
