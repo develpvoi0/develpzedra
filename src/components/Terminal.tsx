@@ -4,7 +4,7 @@ import { audio } from "../engine/audio";
 import { bus } from "../engine/bus";
 import { commands, resolve } from "../engine/commands";
 import type { GameKind } from "../engine/types";
-import { BANNER } from "../engine/sprites";
+import { BANNER, SUBTITLE } from "../engine/sprites";
 import { GameCanvas } from "../arcade/GameCanvas";
 import { Prompt } from "./Prompt";
 import { SkipCtx } from "./TypedBlock";
@@ -23,12 +23,12 @@ const GAME_META: Record<GameKind, { title: string; tip: string }> = {
 const WELCOME = (
   <div className="intro">
     <pre className="banner">{BANNER}</pre>
+    <div className="tagline text-amb text-xl">{SUBTITLE}</div>
     <div className="tagline">
       {"// Del componente al clúster — Construyo y lo mantengo corriendo."}
     </div>
     <div className="mt-2">
-      Sesión Iniciada como <b className="text-grn">Jhorman Parra</b> · Caracas, VE ·{" "}
-      <span className="text-amb">5+ años</span>
+      Sesión Iniciada como <b className="text-grn">Jhorman Parra</b> · Caracas, VE 
     </div>
     <div className="text-dim">
       Escribe <b className="text-cyan">help</b> para ver comandos, o toca un chip abajo ↓

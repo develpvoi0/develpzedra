@@ -15,7 +15,7 @@ export function TopBar() {
   const [on, setOn] = useState(true);   // estado VISUAL del botón;
                                         // el estado real vive en audio.ts
   return (
-    <div className="sticky top-0 z-30 flex items-center gap-2.5 px-3.5 py-2 bg-[#05060caa] backdrop-blur-sm border-b border-[#1b2e4b] text-[11.5px] text-dim tracking-[.04em]">
+    <div className="sticky top-0 z-30 flex items-center gap-2.5 px-3.5 py-2 bg-[#05060caa] backdrop-blur-sm border-b border-[#1b2e4b] text-[11.5px] text-dim tracking-[.04em] h-20">
       <span className="flex gap-1.5">
         <i className="w-[11px] h-[11px] rounded-full bg-red block" />
         <i className="w-[11px] h-[11px] rounded-full bg-amb block" />
