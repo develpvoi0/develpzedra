@@ -1,38 +1,64 @@
-# push a main → imagen a GHCR → rollout en tu K3s por SSH.
-# Secrets requeridos: VPS_HOST, VPS_USER, VPS_DEPLOY_KEY.
-name: deploy
-on: { push: { branches: [main] } }
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/develpvoi0/develpzedra
 
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
-    permissions: { contents: read, packages: write }
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Login GHCR
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login a GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & push
+      - name: Build y push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Rollout en K3s
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verificar secrets
+        run: |
+          echo "VPS_HOST definido: ${{ secrets.VPS_HOST != '' }}"
+          echo "VPS_USER definido: ${{ secrets.VPS_USER != '' }}"
+          echo "VPS_SSH_KEY definido: ${{ secrets.VPS_SSH_KEY != '' }}"
+
+      - name: Desplegar al cluster
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_DEPLOY_KEY }}
-          script: |
-            kubectl -n personal set image deployment/portfolio \
-              web=ghcr.io/${{ github.repository }}:${{ github.sha }}
-            kubectl -n personal rollout status deployment/portfolio --timeout=90s
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          command_timeout: 5m
+          script: ghcr.io/develpvoi0/develpzedra:${{ github.sha }}
