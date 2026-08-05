@@ -1,5 +1,6 @@
 import { Section } from "../Icons";
 import { TypedBlock } from "../TypedBlock";
+import { useContent } from "../../i18n/lang";
 
 const PODS = `$ kubectl get pods -A
 
@@ -20,28 +21,21 @@ aromia.com.ve/solidarity-energy    TLS ok · renueva 58d
 ✓ lint + typecheck         main@c04e77  0m31s`;
 
 export function InfraPanel({ onDone }: { onDone?: () => void }) {
+  const { ui } = useContent();
   return (
     <div>
-      <Section icon="server">systems · clúster</Section>
-      <div className="text-dim">Conectando a k3s://contabo-vps ...</div>
+      <Section icon="server">{ui.sections.infra}</Section>
+      <div className="text-dim">{ui.infra.connecting}</div>
       <div>
-        <span className="text-grn">✓</span> handshake ok ·{" "}
-        <span className="text-amb">demo data</span>
+        <span className="text-grn">✓</span> {ui.infra.handshake} ·{" "}
+        <span className="text-amb">{ui.infra.demoData}</span>
       </div>
       <pre className="out text-[12.5px] leading-[1.85] overflow-x-auto">{PODS}</pre>
       <pre className="out text-[12.5px] leading-[1.85] overflow-x-auto">{DEPLOYS}</pre>
-      <TypedBlock
-        className="note"
-        onDone={onDone}
-        segs={[{
-          text:
-            "// Tumbé el clúster entero un domingo por un ingress mal escrito.\n" +
-            "// Desde entonces todo entra por pull request, incluso lo mío.",
-        }]}
-      />
+      <TypedBlock className="note" onDone={onDone} segs={[{ text: ui.infra.note }]} />
       <div className="text-dim">
-        Nota: Paneles en modo <span className="text-amb">demo</span>. se conectan a
-        endpoints reales antes de publicar.
+        {ui.infra.footerPre} <span className="text-amb">{ui.infra.demo}</span>
+        {ui.infra.footerPost}
       </div>
     </div>
   );

@@ -97,7 +97,7 @@ export function startSnake(cv: HTMLCanvasElement, hooks: GameHooks): () => void 
     };
     if (snake.some(s => s.x === h.x && s.y === h.y)) {
       audio.errBuzz();
-      return end("te mordiste", true);
+      return end("bite", true);
     }
     snake.unshift(h);
     if (h.x === food.x && h.y === food.y) {
@@ -114,7 +114,7 @@ export function startSnake(cv: HTMLCanvasElement, hooks: GameHooks): () => void 
     if (e.key === "Escape") {
       e.preventDefault();
       audio.beep(300, 0.08, 0.04);
-      return end("sesión de juego cerrada");
+      return end("closed");
     }
     const m: Record<string, P> = {
       ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 },

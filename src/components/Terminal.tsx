@@ -8,35 +8,32 @@ import { BANNER, SUBTITLE } from "../engine/sprites";
 import { GameCanvas } from "../arcade/GameCanvas";
 import { Prompt } from "./Prompt";
 import { SkipCtx } from "./TypedBlock";
+import { useContent } from "../i18n/lang";
 
 type Entry = { id: number; node: ReactNode };
 
-const GAME_META: Record<GameKind, { title: string; tip: string }> = {
-  snake: { title: "SNAKE//neon",  tip: "flechas o WASD · deslizar en móvil · ESC salir" },
-  bat:   { title: "VESPER//mini", tip: "espacio o toque para aletear · ESC salir" },
-};
-
-/* Banner de bienvenida. Se usa en dos sitios: al montar (primera
-   entrada) y en `clear` (que reinicia el log dejando SOLO esto).
-   Es un elemento estático: cada vez que entra al log con una key
-   nueva, React lo remonta y su animación `introIn` se reproduce. */
-const WELCOME = (
-  <div className="intro">
-    <pre className="banner">{BANNER}</pre>
-    <div className="tagline text-amb text-xl">{SUBTITLE}</div>
-    <div className="tagline">
-      {"// Del componente al clúster — Construyo y lo mantengo corriendo."}
+/* Banner de bienvenida. Como es un componente que lee el idioma,
+   al cambiar de idioma se re-traduce solo (esté donde esté en el
+   log). Se usa al montar y en `clear`. */
+function Welcome() {
+  const { ui } = useContent();
+  return (
+    <div className="intro">
+      <pre className="banner">{BANNER}</pre>
+      <div className="tagline text-amb text-xl">{SUBTITLE}</div>
+      <div className="tagline">{ui.welcome.tagline}</div>
+      <div className="mt-2">
+        {ui.welcome.sessionPre} <b className="text-grn">Jhorman Parra</b> · {ui.welcome.city}
+      </div>
+      <div className="text-dim">
+        {ui.welcome.hintPre} <b className="text-cyan">help</b> {ui.welcome.hintPost}
+      </div>
     </div>
-    <div className="mt-2">
-      Sesión Iniciada como <b className="text-grn">Jhorman Parra</b> · Caracas, VE 
-    </div>
-    <div className="text-dim">
-      Escribe <b className="text-cyan">help</b> para ver comandos, o toca un chip abajo ↓
-    </div>
-  </div>
-);
+  );
+}
 
 export function Terminal() {
+  const { ui } = useContent();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [skip, setSkip] = useState(0);
   const [gameActive, setGameActive] = useState(false);
@@ -53,20 +50,15 @@ export function Terminal() {
   }, []);
 
   /* clear NO deja el log vacío: lo reinicia mostrando de nuevo el
-     banner de bienvenida (como una sesión recién abierta). El eco
-     del propio comando `clear` también se borra, porque este
-     setEntries reemplaza TODO por una sola entrada. */
+     banner de bienvenida (como una sesión recién abierta). */
   const clear = useCallback(() => {
-    setEntries([{ id: ++idRef.current, node: WELCOME }]);
+    setEntries([{ id: ++idRef.current, node: <Welcome /> }]);
   }, []);
 
-  /* Monta el juego como una entrada más del log. El GameCanvas
-     nos entrega su función de parada vía registerStop (el
-     Terminal NO sabe cómo se detiene un juego — solo guarda el
-     botón rojo que el juego mismo le dio). */
+  /* Monta el juego como una entrada más del log. */
   const launchGame = useCallback((kind: GameKind) => {
     setGameActive(true);
-    const meta = GAME_META[kind];
+    const meta = ui.games[kind];
     print(
       <GameCanvas
         kind={kind}
@@ -75,16 +67,17 @@ export function Terminal() {
         registerStop={s => { stopRef.current = s; }}
         onEnd={(msg, score) => {
           setGameActive(false);
+          const reason = ui.gameEnd[msg as keyof typeof ui.gameEnd] ?? msg;
           print(
             <div>
-              {msg} — puntuación <b className="text-amb">{score}</b> · otra ronda:{" "}
+              {reason} {ui.terminal.scorePre} <b className="text-amb">{score}</b> {ui.terminal.another}{" "}
               <span className="text-cyan">tired</span>
             </div>,
           );
         }}
       />,
     );
-  }, [print]);
+  }, [print, ui]);
 
   /* EL VIAJE DE UN COMANDO — cuatro pasos en orden:
      1. saltar tecleos pendientes  2. interrumpir juego activo
@@ -110,20 +103,17 @@ export function Terminal() {
       audio.errBuzz();
       print(
         <div>
-          <span className="text-red">comando no encontrado:</span> {cmd} — escribe{" "}
+          <span className="text-red">{ui.terminal.notFound}</span> {cmd} — {ui.terminal.tryHelp}{" "}
           <span className="text-cyan">help</span>
         </div>,
       );
     }
-  }, [print, clear, launchGame]);
+  }, [print, clear, launchGame, ui]);
 
-  /* chips de la HintBar → bus → run. bus.on devuelve la
-     des-suscripción: el return del efecto ES el cleanup. */
+  /* chips de la HintBar → bus → run. */
   useEffect(() => bus.on(cmd => { audio.keyClick(true); run(cmd); }), [run]);
 
-  /* Cualquier clic salta el tecleo en curso (los TypedBlock nuevos
-     no se ven afectados gracias a su skip0). Se excluyen enlaces
-     y botones para no robarles la interacción. */
+  /* Cualquier clic salta el tecleo en curso. */
   useEffect(() => {
     const bump = (e: Event) => {
       const t = e.target as HTMLElement;
@@ -137,7 +127,7 @@ export function Terminal() {
   /* Banner de bienvenida como primera entrada + fanfarria.
      Deps vacías: solo al montar. */
   useEffect(() => {
-    print(WELCOME);
+    print(<Welcome />);
     audio.beep(660, 0.07, 0.045);
     const t = setTimeout(() => audio.beep(990, 0.09, 0.045), 110);
     return () => clearTimeout(t);
@@ -155,8 +145,6 @@ export function Terminal() {
         aria-live="polite"
         className="max-w-[920px] mx-auto px-4 pt-6 pb-32 phosphor"
         onClick={e => {
-          // clic en cualquier parte → foco al input (como toda
-          // terminal real). Enlaces y canvas quedan fuera.
           const t = e.target as HTMLElement;
           if (!t.closest("a") && !t.closest("canvas")) {
             (document.querySelector('input[aria-label="terminal"]') as HTMLInputElement | null)?.focus();

@@ -8,18 +8,20 @@ import { ContactCard } from "../components/blocks/ContactCard";
 import { ArcadeMenu } from "../components/blocks/ArcadeMenu";
 import { HelpList } from "../components/blocks/HelpList";
 
+/* Comandos: nombre → acción. Las descripciones (traducibles) viven
+   en el diccionario i18n (ui.commands) y las pinta HelpList. */
 export const commands: Record<string, Command> = {
-  help:     { desc: "Lista de comandos",           run: c => c.print(<HelpList list={helpRows()} />) },
-  whoami:   { desc: "Perfil estilo neofetch",      run: c => c.print(<Neofetch />) },
-  history:  { desc: "Trayectoria profesional",     run: c => c.print(<HistoryList />) },
-  infra:    { desc: "Estado del clúster K3s",      run: c => c.print(<InfraPanel />) },
-  projects: { desc: "Builds: producción y juegos", run: c => c.print(<ProjectList />) },
-  stack:    { desc: "Tecnologías por función",     run: c => c.print(<StackList />) },
-  contact:  { desc: "Canales de contacto",         run: c => c.print(<ContactCard />) },
-  tired:    { desc: "Sala de juegos retro",        run: c => c.print(<ArcadeMenu />) },
-  snake:    { desc: "SNAKE//neon",                 run: c => c.launchGame("snake") },
-  bat:      { desc: "VESPER//mini",                run: c => c.launchGame("bat") },
-  clear:    { desc: "Limpiar la terminal",         run: c => c.clear() },
+  help:     { run: c => c.print(<HelpList />) },
+  whoami:   { run: c => c.print(<Neofetch />) },
+  history:  { run: c => c.print(<HistoryList />) },
+  infra:    { run: c => c.print(<InfraPanel />) },
+  projects: { run: c => c.print(<ProjectList />) },
+  stack:    { run: c => c.print(<StackList />) },
+  contact:  { run: c => c.print(<ContactCard />) },
+  tired:    { run: c => c.print(<ArcadeMenu />) },
+  snake:    { run: c => c.launchGame("snake") },
+  bat:      { run: c => c.launchGame("bat") },
+  clear:    { run: c => c.clear() },
 };
 
 /* Alias: puras redirecciones de nombre. */
@@ -31,10 +33,9 @@ export const aliases: Record<string, string> = {
 /* snake/bat no salen en help: se descubren desde el menú `tired`. */
 const HIDDEN = new Set(["snake", "bat"]);
 
-export const helpRows = (): [string, string][] =>
-  Object.entries(commands)
-    .filter(([n]) => !HIDDEN.has(n))
-    .map(([n, c]) => [n, c.desc]);
+/* Nombres visibles en `help`, en orden de declaración. HelpList les
+   pone la descripción del idioma activo. */
+export const VISIBLE_COMMANDS = Object.keys(commands).filter(n => !HIDDEN.has(n));
 
 /* Normaliza la entrada del usuario y traduce alias. */
 export const resolve = (raw: string): string => {

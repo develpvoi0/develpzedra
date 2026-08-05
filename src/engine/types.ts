@@ -9,6 +9,5 @@ export type CommandCtx = {
 };
 
 export type Command = {
-    desc: string;
     run: (ctx: CommandCtx) => void;
 }

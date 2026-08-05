@@ -3,12 +3,13 @@
    dominio — y la nota lo dice explícito. */
 import { Section } from "../Icons";
 import { TypedBlock } from "../TypedBlock";
-import { stack } from "../../data/profile";
+import { useContent } from "../../i18n/lang";
 
 export function StackList({ onDone }: { onDone?: () => void }) {
+  const { stack, ui } = useContent();
   return (
     <div>
-      <Section icon="chip" tone="amb">stack · por función</Section>
+      <Section icon="chip" tone="amb">{ui.sections.stack}</Section>
       <div className="out">
         {stack.map(([n, v]) => (
           <div key={n} className="my-1">
@@ -17,11 +18,7 @@ export function StackList({ onDone }: { onDone?: () => void }) {
           </div>
         ))}
       </div>
-      <TypedBlock
-        className="note"
-        onDone={onDone}
-        segs={[{ text: "// Ordenado por función, no por porcentaje. Las barras de habilidades son ficción." }]}
-      />
+      <TypedBlock className="note" onDone={onDone} segs={[{ text: ui.notes.stack }]} />
     </div>
   );
 }

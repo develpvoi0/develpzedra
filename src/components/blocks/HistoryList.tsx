@@ -1,11 +1,12 @@
 import { Icons, Section } from "../Icons";
 import { TypedBlock } from "../TypedBlock";
-import { jobs } from "../../data/profile";
+import { useContent } from "../../i18n/lang";
 
 export function HistoryList({ onDone }: { onDone?: () => void }) {
+  const { jobs, ui } = useContent();
   return (
     <div>
-      <Section icon="clock">runtime · trayectoria</Section>
+      <Section icon="clock">{ui.sections.history}</Section>
       {jobs.map((j, i) => (
         <article key={j.id} className="rec">
           <div className="ric">{Icons.clock}</div>
@@ -15,8 +16,8 @@ export function HistoryList({ onDone }: { onDone?: () => void }) {
               <span className="text-[11.5px] text-mag">
                 {j.id} ·{" "}
                 {j.running
-                  ? <span className="text-grn">● running</span>
-                  : <span className="text-dim">exit 0</span>}
+                  ? <span className="text-grn">● {ui.labels.running}</span>
+                  : <span className="text-dim">{ui.labels.exit0}</span>}
               </span>
             </div>
             <div className="text-dim text-xs mt-0.5 mb-2">

@@ -2,7 +2,7 @@ import { Icons, Section, type IconName } from "../Icons";
 import { PixelSprite } from "../PixelSprite";
 import { TypedBlock } from "../TypedBlock";
 import { BATMAP, BATPAL, SLIMEMAP, SLIMEPAL } from "../../engine/sprites";
-import { projects } from "../../data/profile";
+import { useContent } from "../../i18n/lang";
 
 const SPRITES = {
   bat: { map: BATMAP, pal: BATPAL },
@@ -10,13 +10,14 @@ const SPRITES = {
 } as const;
 
 export function ProjectList({ onDone }: { onDone?: () => void }) {
+  const { projects, ui } = useContent();
   return (
     <div>
-      <Section icon="box">builds · producción y juegos</Section>
+      <Section icon="box">{ui.sections.projects}</Section>
 
       {projects.map(p => (
         <article key={p.id} className={`rec ${p.game ? "rec-game" : ""}`}>
-          {"sprite" in p ? (
+          {p.sprite ? (
             <div className="sprite">
               <PixelSprite map={SPRITES[p.sprite].map} palette={SPRITES[p.sprite].pal} />
             </div>
@@ -35,7 +36,7 @@ export function ProjectList({ onDone }: { onDone?: () => void }) {
             <div className="flex flex-wrap gap-1.5 mt-2.5">
               {p.tags.map(t => <span key={t} className="tag">{t}</span>)}
             </div>
-            {"nota" in p && (
+            {p.nota && (
               <TypedBlock className="note mt-2.5" segs={[{ text: p.nota }]} />
             )}
           </div>
@@ -43,15 +44,7 @@ export function ProjectList({ onDone }: { onDone?: () => void }) {
       ))}
 
       {/* nota de cierre del bloque completo */}
-      <TypedBlock
-        className="note"
-        onDone={onDone}
-        segs={[{
-          text:
-            "// dos columnas que pesan igual. quien solo muestra trabajo de cliente parece un servicio;\n" +
-            "// yo quiero parecer una persona con criterio.",
-        }]}
-      />
+      <TypedBlock className="note" onDone={onDone} segs={[{ text: ui.notes.projects }]} />
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { audio } from "../engine/audio";
-import { bootScript } from "../data/profile";
+import { useContent } from "../i18n/lang";
 import { usePrefersReducedMotion } from "./TypedBlock";
 
 const TOTAL = 28;   // segmentos de la barra
 
 export function BootSequence({ onDone }: { onDone: () => void }) {
+  const { bootScript, ui } = useContent();
   const still = usePrefersReducedMotion();
   const [lines, setLines] = useState(0);     // líneas ya mostradas
   const [bar, setBar] = useState(-1);        // -1: aún no · 0..TOTAL: llenando
@@ -56,7 +57,7 @@ export function BootSequence({ onDone }: { onDone: () => void }) {
       ))}
       {bar >= 0 && (
         <div>
-          <span className="text-dim">Inicializando Perfil </span>
+          <span className="text-dim">{ui.bootBar}</span>
           <span className={bar >= TOTAL
             ? "text-grn [text-shadow:0_0_10px_#4dff9e99]"
             : "text-grn"}>

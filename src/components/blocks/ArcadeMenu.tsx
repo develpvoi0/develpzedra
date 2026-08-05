@@ -1,18 +1,20 @@
 import { Section } from "../Icons";
+import { useContent } from "../../i18n/lang";
 
 export function ArcadeMenu() {
+  const { ui } = useContent();
   return (
     <div>
-      <Section icon="chip" tone="grn">arcade · para el aburrimiento</Section>
-      <div>Sala de Juegos Retro — Elige:</div>
+      <Section icon="chip" tone="grn">{ui.sections.arcade}</Section>
+      <div>{ui.arcade.choose}</div>
       <div className="out kv">
         <span className="text-cyan">snake</span>
-        <span>La serpiente clásica, versión neón</span>
+        <span>{ui.arcade.snake}</span>
         <span className="text-cyan">bat</span>
-        <span>Vuela el murciélago de VESPER por la cueva</span>
+        <span>{ui.arcade.bat}</span>
       </div>
       <div className="text-dim">
-        Escribe el nombre del juego · dentro: <span className="text-cyan">ESC</span> para salir
+        {ui.arcade.howtoPre} <span className="text-cyan">ESC</span> {ui.arcade.esc}
       </div>
     </div>
   );

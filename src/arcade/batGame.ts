@@ -142,7 +142,7 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
       // techo/suelo
       if (by < -2 || by + BH > 162) {
         audio.errBuzz();
-        return end("Contra la cueva", true);
+        return end("cave", true);
       }
       // colisión con paredes + punto al pasarlas (con margen de 2px
       // a favor del jugador: los juegos justos se sienten mejor)
@@ -150,7 +150,7 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
         if (BX + BW - 2 > w.x && BX + 2 < w.x + 16 &&
             (by + 2 < w.gy || by + BH - 2 > w.gy + w.gh)) {
           audio.errBuzz();
-          return end("Contra la cueva", true);
+          return end("cave", true);
         }
         if (!w.passed && w.x + 16 < BX) {
           w.passed = true;
@@ -168,7 +168,7 @@ export function startBat(cv: HTMLCanvasElement, hooks: GameHooks): () => void {
     if (e.key === "Escape") {
       e.preventDefault();
       audio.beep(300, 0.08, 0.04);
-      return end("Sesión de Juego Cerrada");
+      return end("closed");
     }
     if (e.key === " " || e.key === "ArrowUp" || e.key === "w") {
       e.preventDefault();  // que el espacio no haga scroll

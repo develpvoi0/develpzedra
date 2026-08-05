@@ -29,7 +29,7 @@ export function GameCanvas({ kind, title, tip, onEnd, registerStop }: {
     registerStop(() => {
       if (!stopped) {
         stopped = true; stop(); registerStop(null);
-        onEnd("juego interrumpido", final);
+        onEnd("interrupted", final);
       }
     });
 

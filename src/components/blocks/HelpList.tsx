@@ -1,10 +1,14 @@
-export function HelpList({ list }: { list: [string, string][] }) {
+import { VISIBLE_COMMANDS } from "../../engine/commands";
+import { useContent } from "../../i18n/lang";
+
+export function HelpList() {
+  const { ui } = useContent();
   return (
     <div className="out kv">
-      {list.map(([name, desc]) => (
+      {VISIBLE_COMMANDS.map(name => (
         <div key={name} className="contents">
           <span className="text-cyan">{name}</span>
-          <span>{desc}</span>
+          <span>{ui.commands[name] ?? ""}</span>
         </div>
       ))}
     </div>

@@ -3,12 +3,16 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { HintBar } from './HintBar'
 import { bus } from '../engine/bus'
+import { LangProvider } from '../i18n/lang'
+
+/* HintBar lee el contexto de idioma → hay que envolverlo */
+const renderBar = () => render(<LangProvider><HintBar /></LangProvider>)
 
 describe('HintBar', () => {
   afterEach(() => vi.restoreAllMocks())
 
   it('renderiza todos los chips de comandos', () => {
-    render(<HintBar />)
+    renderBar()
     for (const cmd of ['whoami', 'history', 'infra', 'projects', 'stack', 'contact', 'tired']) {
       expect(screen.getByRole('button', { name: cmd })).toBeInTheDocument()
     }
@@ -17,7 +21,7 @@ describe('HintBar', () => {
   it('emite el comando en el bus al hacer click en un chip', async () => {
     const emit = vi.spyOn(bus, 'emit')
     const user = userEvent.setup()
-    render(<HintBar />)
+    renderBar()
 
     await user.click(screen.getByRole('button', { name: 'projects' }))
 
